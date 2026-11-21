@@ -1,6 +1,6 @@
 # @BarretoTech/renovate-config
 
-Shared [Renovate](https://docs.renovatebot.com/) configuration for all repositories in the BarretoTech organization.
+Shared [Renovate](https://docs.renovatebot.com/) configuration for every repository in the Barreto Tech enterprise: the `archgate`, `jack-for-work` and `BarretoTech` organizations. It is the enterprise's only Renovate preset; `archgate/renovate-config` extends it unchanged, so repositories that still name that preset get the same rules.
 
 ## Usage
 
@@ -25,7 +25,7 @@ Extends [`config:best-practices`](https://docs.renovatebot.com/presets-config/#c
 - Pin devDependencies
 - Pin Docker image digests
 - Pin GitHub Action digests
-- npm minimum release age (overridden to **7 days** -- see below)
+- npm minimum release age (overridden to **7 days** — see below)
 - Weekly lock file maintenance
 - Config migration PRs
 
@@ -41,13 +41,26 @@ Extends [`config:best-practices`](https://docs.renovatebot.com/presets-config/#c
 ### Noise reduction
 
 - **Non-major devDependencies grouped** into a single PR per repo
-- **Docs dependencies grouped** into a single PR
+- **Non-major production dependencies grouped** into a single PR per repo
+- **.prototools toolchain grouped** (node, npm, gh, moon, proto) into a single PR
+- **Docs dependencies grouped** into a single PR, committed as `chore(deps)` so a docs-site bump never triggers a release
 - **GitHub Actions grouped** into a single PR
+- **Java/Maven dependencies grouped** into a single PR (all update types)
+- **.NET/NuGet dependencies grouped** into a single PR (all update types)
+- **Python dependencies grouped** into a single PR (all update types)
+- **Go module dependencies grouped** into a single PR (all update types)
+- **Ruby/Bundler dependencies grouped** into a single PR (all update types)
 - **Linters, formatters, and type packages auto-merged** on minor/patch
 - **Schedule:** PRs created **only on the last Sunday of the month** (Sunday between the 25th and 31st, before 6am Europe/Oslo)
 - **Automerges** are batched into the same monthly window
 - **Rate limited:** max 20 concurrent PRs, no per-hour cap (so the full monthly batch can land in one run)
-- **`internalChecksFilter: "strict"`** — only release PRs that pass all internal checks (e.g., release-age threshold)
+
+### Ignored paths
+
+- **Archgate rule fixtures** under `.archgate/fixtures/` are ignored, at any depth. They are written to pass or to violate a rule, so Renovate neither lists nor updates them.
+- The `config:best-practices` ignore list (`node_modules`, `bower_components`, `vendor`, `examples`, `__tests__`, `test`, `tests`, `__fixtures__`) is repeated in `default.json`, because Renovate replaces `ignorePaths` and does not merge it. NuGet keeps its shorter list, which leaves test projects updatable.
+
+A repository that sets its own `ignorePaths` replaces this whole list and must repeat the entries it still wants, `**/.archgate/fixtures/**` included.
 
 ## Overriding for a specific repo
 
@@ -67,8 +80,6 @@ Add `packageRules` or `ignorePresets` in the repo's own `renovate.json`:
 }
 ```
 
-To opt out of the monthly schedule for a specific repo (e.g. a security-critical service), override `schedule` and `automergeSchedule` in the repo config.
-
 ## Presets reference
 
 | Preset | Purpose |
@@ -80,3 +91,6 @@ To opt out of the monthly schedule for a specific repo (e.g. a security-critical
 | `:automergeRequireAllStatusChecks` | All CI must pass before automerge |
 | `:rebaseStalePrs` | Keep PRs up to date with base |
 | `:timezone(Europe/Oslo)` | Schedule timezone |
+| `:gitSignOff` | Add DCO sign-off line to commits |
+
+To opt out of the monthly schedule for a specific repo, override `schedule` and `automergeSchedule` in the repo config.
