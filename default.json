@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared Renovate configuration for the BarretoTech organization.",
+  "description": "Shared Renovate configuration for every repository in the Barreto Tech enterprise: the archgate, jack-for-work and BarretoTech organizations.",
   "extends": [
     "config:best-practices",
     "security:openssf-scorecard",
@@ -8,7 +8,8 @@
     ":approveMajorUpdates",
     ":rebaseStalePrs",
     ":enableVulnerabilityAlerts",
-    ":timezone(Europe/Oslo)"
+    ":timezone(Europe/Oslo)",
+    ":gitSignOff"
   ],
   "schedule": [
     "* 0-5 25-31 * 0"
@@ -25,6 +26,27 @@
   "configMigration": true,
   "reviewersFromCodeOwners": true,
   "labels": ["dependencies"],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+    "**/.archgate/fixtures/**"
+  ],
+  "nuget": {
+    "ignorePaths": [
+      "**/node_modules/**",
+      "**/bower_components/**",
+      "**/vendor/**",
+      "**/examples/**",
+      "**/__fixtures__/**",
+      "**/.archgate/fixtures/**"
+    ]
+  },
   "packageRules": [
     {
       "description": "Group Bun runtime (.prototools, workflow bun-version) and @types/bun together",
@@ -32,9 +54,9 @@
       "matchPackageNames": ["oven-sh/bun", "@types/bun", "bun"]
     },
     {
-      "description": "Group .prototools toolchain updates (node, npm, gh) together",
+      "description": "Group .prototools toolchain updates (node, npm, gh, moon, proto) together",
       "groupName": "prototools toolchain",
-      "matchPackageNames": ["node", "npm", "cli/cli"],
+      "matchPackageNames": ["node", "npm", "cli/cli", "moon", "proto"],
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
@@ -45,6 +67,13 @@
       "matchPackageNames": ["!@types/bun"]
     },
     {
+      "description": "Group all non-major production dependencies into a single PR per repo",
+      "groupName": "dependencies (non-major)",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["!bun"]
+    },
+    {
       "description": "Automerge non-major updates for linting, formatting, and type packages",
       "matchPackageNames": [
         "oxlint",
@@ -53,9 +82,9 @@
         "prettier-plugin-astro",
         "eslint",
         "@commitlint/{/,}**",
-        "commitizen"
+        "commitizen",
+        "/^@types\\//"
       ],
-      "matchPackagePatterns": ["^@types/"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
       "automergeType": "pr"
@@ -80,15 +109,52 @@
       "pinDigests": true
     },
     {
+      "description": "SLSA reusable workflow MUST stay tag-pinned — generate-builder.sh rejects non-tag refs (slsa-framework/slsa-github-generator#150)",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["slsa-framework/slsa-github-generator"],
+      "pinDigests": false
+    },
+    {
       "description": "Group GitHub Actions updates (excluding bun, which groups with .prototools)",
       "matchManagers": ["github-actions"],
-      "excludePackageNames": ["bun"],
+      "matchPackageNames": ["!bun"],
       "groupName": "github-actions"
     },
     {
-      "description": "Group docs site dependencies (Astro, Starlight, etc.)",
+      "description": "Group docs site dependencies (Astro, Starlight, etc.). Commit as chore(deps), not fix(deps): the docs site is not a released artifact, so a bump must not trigger a release.",
       "groupName": "docs dependencies",
       "matchFileNames": ["docs/package.json"],
+      "separateMajorMinor": false,
+      "semanticCommitType": "chore"
+    },
+    {
+      "description": "Group all Java/Maven dependencies into a single PR",
+      "groupName": "java dependencies",
+      "matchManagers": ["maven"],
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Group all .NET/NuGet dependencies into a single PR",
+      "groupName": "dotnet dependencies",
+      "matchManagers": ["nuget"],
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Group all Python dependencies into a single PR",
+      "groupName": "python dependencies",
+      "matchManagers": ["pip_requirements", "pip-compile", "pipenv", "poetry", "pep621", "setup-cfg"],
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Group all Go module dependencies into a single PR",
+      "groupName": "go dependencies",
+      "matchManagers": ["gomod"],
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Group all Ruby/Bundler dependencies into a single PR",
+      "groupName": "ruby dependencies",
+      "matchManagers": ["bundler"],
       "separateMajorMinor": false
     }
   ]
