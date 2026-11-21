@@ -66,7 +66,7 @@ Extends [`config:best-practices`](https://docs.renovatebot.com/presets-config/#c
 | `.moon/toolchains.yml` | Proto version in `proto.version` |
 | `.github/workflows/*.yml` and `*.yaml` | `proto-version` passed to `moonrepo/setup-toolchain` or `BarretoTech/setup-toolchain` |
 
-Renovate's built-in [Proto manager](https://docs.renovatebot.com/modules/manager/proto/) handles supported tools in `.prototools`, including Bun, GitHub CLI, Node.js, npm, Moon, and Proto. The built-in npm manager handles `engines.bun` in `package.json`. The preset does not extract those pins a second time. Untagged Archgate plugin references and version aliases such as `latest` are not updated by the custom managers.
+Renovate's built-in [Proto manager](https://docs.renovatebot.com/modules/manager/proto/) handles supported tools in `.prototools`, including Bun, GitHub CLI, Node.js, npm, Moon, and Proto. The native `bun` and `npm` managers share a `package.json` extractor that handles `engines.bun`. The preset does not extract those pins a second time. Untagged Archgate plugin references and version aliases such as `latest` are not updated by the custom managers.
 
 ### Ignored paths
 
