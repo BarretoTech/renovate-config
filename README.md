@@ -42,7 +42,8 @@ Extends [`config:best-practices`](https://docs.renovatebot.com/presets-config/#c
 
 - **Non-major devDependencies grouped** into a single PR per repo
 - **Non-major production dependencies grouped** into a single PR per repo
-- **.prototools toolchain grouped** (node, npm, gh, moon, proto) into a single PR
+- **Node.js, npm, and GitHub CLI minor and patch updates grouped** into a single PR
+- **Bun, Archgate CLI, Moon, and Proto pins grouped** by tool so the pins for each tool update together; the Bun group also includes `@types/bun`
 - **Docs dependencies grouped** into a single PR, committed as `chore(deps)` so a docs-site bump never triggers a release
 - **GitHub Actions grouped** into a single PR
 - **Java/Maven dependencies grouped** into a single PR (all update types)
@@ -54,6 +55,18 @@ Extends [`config:best-practices`](https://docs.renovatebot.com/presets-config/#c
 - **Schedule:** PRs created **only on the last Sunday of the month** (Sunday between the 25th and 31st, before 6am Europe/Oslo)
 - **Automerges** are batched into the same monthly window
 - **Rate limited:** max 20 concurrent PRs, no per-hour cap (so the full monthly batch can land in one run)
+
+### Custom managers
+
+| File | Pins tracked by the preset's regex managers |
+| --- | --- |
+| `.prototools` | Zizmor, Stripe CLI, and Archgate CLI versions; tagged `github://archgate/proto-plugin@v…` references |
+| `.archgate/version` | Archgate CLI version |
+| `.moon/workspace.yml` | Moon version in `versionConstraint` |
+| `.moon/toolchains.yml` | Proto version in `proto.version` |
+| `.github/workflows/*.yml` and `*.yaml` | `proto-version` passed to `moonrepo/setup-toolchain` or `BarretoTech/setup-toolchain` |
+
+Renovate's built-in [Proto manager](https://docs.renovatebot.com/modules/manager/proto/) handles supported tools in `.prototools`, including Bun, GitHub CLI, Node.js, npm, Moon, and Proto. The native `bun` and `npm` managers share a `package.json` extractor that handles `engines.bun`. The preset does not extract those pins a second time. Untagged Archgate plugin references and version aliases such as `latest` are not updated by the custom managers.
 
 ### Ignored paths
 
