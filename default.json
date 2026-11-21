@@ -47,17 +47,116 @@
       "**/.archgate/fixtures/**"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Archgate CLI version pinned in .archgate/version",
+      "managerFilePatterns": ["/^\\.archgate/version$/"],
+      "matchStrings": ["^\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)\\s*$"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "archgate/cli",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Zizmor version pinned in .prototools",
+      "managerFilePatterns": ["/^\\.prototools$/"],
+      "matchStrings": ["(?m)^zizmor\\s*=\\s*\"(?<currentValue>\\d[^\"]*)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "zizmorcore/zizmor",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Stripe CLI version pinned in .prototools",
+      "managerFilePatterns": ["/^\\.prototools$/"],
+      "matchStrings": ["(?m)^stripe\\s*=\\s*\"(?<currentValue>\\d[^\"]*)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "stripe/stripe-cli",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Archgate CLI version pinned in .prototools",
+      "managerFilePatterns": ["/^\\.prototools$/"],
+      "matchStrings": ["(?m)^archgate\\s*=\\s*\"(?<currentValue>\\d[^\"]*)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "archgate/cli",
+      "packageNameTemplate": "archgate/cli",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Archgate Proto plugin release pinned in .prototools",
+      "managerFilePatterns": ["/^\\.prototools$/"],
+      "matchStrings": [
+        "(?m)^archgate\\s*=\\s*\"github://archgate/proto-plugin@(?<currentValue>v[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "archgate/proto-plugin"
+    },
+    {
+      "customType": "regex",
+      "description": "Moon version pinned by .moon/workspace.yml versionConstraint",
+      "managerFilePatterns": ["/^\\.moon/workspace\\.yml$/"],
+      "matchStrings": ["(?m)^versionConstraint:\\s*\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "moon",
+      "packageNameTemplate": "moonrepo/moon",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Proto version pinned by .moon/toolchains.yml proto.version",
+      "managerFilePatterns": ["/^\\.moon/toolchains\\.yml$/"],
+      "matchStrings": [
+        "(?m)^proto:\\s*\\n(?:\\s+#[^\\n]*\\n)*\\s+version:\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "moonrepo/proto",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Proto version pinned by the moonrepo or BarretoTech setup-toolchain action",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": [
+        "uses: (?:moonrepo|BarretoTech)/setup-toolchain@\\S+[^\n]*\n\\s+with:\n(?:\\s+[\\w-]+:[^\n]*\n)*?\\s+proto-version: (?<currentValue>\\S+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "moonrepo/proto",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
   "packageRules": [
     {
-      "description": "Group Bun runtime (.prototools, workflow bun-version) and @types/bun together",
+      "description": "Group Bun runtime pins in .prototools, package.json and workflows with @types/bun",
       "groupName": "bun",
       "matchPackageNames": ["oven-sh/bun", "@types/bun", "bun"]
     },
     {
-      "description": "Group .prototools toolchain updates (node, npm, gh, moon, proto) together",
+      "description": "Group Node.js, npm and GitHub CLI minor and patch updates",
       "groupName": "prototools toolchain",
-      "matchPackageNames": ["node", "npm", "cli/cli", "moon", "proto"],
+      "matchPackageNames": ["node", "npm", "cli/cli"],
       "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "description": "Group Archgate CLI pins in .archgate/version and .prototools",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["archgate/cli"],
+      "groupName": "archgate"
+    },
+    {
+      "description": "Group Moon pins in .prototools and .moon/workspace.yml",
+      "matchManagers": ["proto", "custom.regex"],
+      "matchPackageNames": ["moonrepo/moon"],
+      "groupName": "moon"
+    },
+    {
+      "description": "Group Proto pins in .prototools, Moon toolchains, setup-toolchain workflows and repo-specific regex managers",
+      "matchManagers": ["proto", "custom.regex"],
+      "matchPackageNames": ["moonrepo/proto"],
+      "groupName": "proto"
     },
     {
       "description": "Group all non-major devDependencies into a single PR per repo",
